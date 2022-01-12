@@ -9,7 +9,7 @@ the most complete advantage of this version - we can hide any file we want in a 
 the disadvantage of this version - we can hide files only in a png file.
 
 
-thos are the file types that the program support and can hide in a png file: (which known for now...)
+those are the file types that the program support and can hide in a png file: (which known for now...)
 	.mp3
 	.png
 	.rar
