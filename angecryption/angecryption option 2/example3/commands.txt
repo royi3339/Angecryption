@@ -1,0 +1,9 @@
+
+encrypt pdf in png:
+
+python angecryption.py -k abcdef0123456789 -s png1.png -a hide-pdf-in-png -iv 1234123412341234 -t pdf1.pdf -o example3\pdf_png.png
+
+
+decrypt png to pdf:
+
+python angecryption.py -k abcdef0123456789 -s example3\pdf_png.png -a decrypt-to-pdf -iv 1234123412341234 -o example3\dec_pdf_png.pdf

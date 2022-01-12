@@ -1,0 +1,9 @@
+
+encrypt png in png:
+
+python angecryption.py -k abcdef0123456789 -s png1.png -a hide-png-in-png -iv 1234123412341234 -t png2.png -o example1\png_png.png
+
+
+decrypt png to png:
+
+angecryption.py -k abcdef0123456789 -s example1\png_png.png -a decrypt-to-png -iv 1234123412341234 -o example1\dec_png_png.png

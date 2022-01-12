@@ -1,0 +1,5 @@
+
+decrypt and then encrypt:
+
+python angecryption.py -k abcdef0123456789 -s png1.png -a decrypt -iv 1234123412341234 -o example5\dec_png.png
+python angecryption.py -k abcdef0123456789 -s example5\dec_png.png -a encrypt -iv 1234123412341234 -o example5\enc_png.png
