@@ -34,7 +34,7 @@ ange_funcs = {
 cleaning_funcs = {
     "make-png-clean": remove_hidden_file_from_png_file,
     "make-file-clean": remove_wrapping_png_file,
-    "combine-file-in-png": combine_file_and_png
+    # "combine-file-in-png": combine_file_and_png
 }
 
 
@@ -47,8 +47,11 @@ def main():
     if args.action in ["encrypt", "decrypt", "decrypt-to-png", "decrypt-to-file"]:
         handle_file(args.source, args.key, args.iv, args.output, args.action)
 
-    elif args.action in ["make-png-clean", "make-file-clean", "combine-file-in-png"]:
+    elif args.action in ["make-png-clean", "make-file-clean"]:
         cleaning_funcs[args.action](args.source, args.output)
+       
+    elif args.action in ["combine-file-in-png"]:
+        combine_file_and_png(args.source, args.target, args.output)
 
     else:  # args.action in ["hide-png-in-png", "hide-file-in-png"]
         ange_funcs[args.action](args.source, args.target, args.output, args.key, args.iv)
