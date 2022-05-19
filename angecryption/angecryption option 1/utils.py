@@ -13,10 +13,6 @@ MAKE_PNG_CLEAN = "make-png-clean"
 MAKE_FILE_CLEAN = "make-file-clean"
 COMBINE_FINE_IN_PNG = "combine-file-in-png"
 
-ENC_DEC_ACTIONS = [ENCRYPT, DECRYPT, DECRYPT_TO_PNG, DECRYPT_TO_FILE]
-ANGECRYPTION_ACTIONS = [HIDE_PNG_IN_PNG, HIDE_FILE_IN_PNG]
-CLEANING_ACTIONS = [MAKE_PNG_CLEAN, MAKE_FILE_CLEAN]
-
 
 def check_iv_or_key_type_and_length(param, name_of_param):
     """
@@ -81,6 +77,3 @@ def check_png(f):
     if from_file(f, mime=True).split("/")[1] not in file_types:
         raise argparse.ArgumentTypeError("the 'Source File' must be a {}".format(" or a ".join(file_types)))
     return f
-
-
-

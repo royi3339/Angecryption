@@ -1,17 +1,11 @@
 # Royi Alishayev.
 
 from menu_file import menu
-from actions_file import *
+from actions_file import encrypt, decrypt, decrypt_to_png, decrypt_to_file,  hide_png_in_png, hide_file_in_png,\
+    remove_hidden_file_from_png_file, remove_wrapping_png_file, combine_file_and_png
+from utils import ENCRYPT, DECRYPT, DECRYPT_TO_PNG, DECRYPT_TO_FILE, HIDE_PNG_IN_PNG, HIDE_FILE_IN_PNG, MAKE_PNG_CLEAN,\
+    MAKE_FILE_CLEAN
 
-ENCRYPT = "encrypt"
-DECRYPT = "decrypt"
-DECRYPT_TO_PNG = "decrypt-to-png"
-DECRYPT_TO_FILE = "decrypt-to-file"
-HIDE_PNG_IN_PNG = "hide-png-in-png"
-HIDE_FILE_IN_PNG = "hide-file-in-png"
-MAKE_PNG_CLEAN = "make-png-clean"
-MAKE_FILE_CLEAN = "make-file-clean"
-COMBINE_FILE_IN_PNG = "combine-file-in-png"
 
 enc_dec_funcs_dict = {
     ENCRYPT: encrypt,
@@ -44,7 +38,7 @@ def main():
     elif args.action in cleaning_funcs_dict:
         # MAKE_PNG_CLEAN, MAKE_FILE_CLEAN
         cleaning_funcs_dict[args.action](args.source, args.output)
-       
+
     elif args.action in ange_funcs_dict:
         # HIDE_PNG_IN_PNG, HIDE_FILE_IN_PNG
         ange_funcs_dict[args.action](args.source, args.target, args.output, args.key, args.iv)

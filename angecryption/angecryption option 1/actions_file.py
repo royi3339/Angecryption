@@ -8,6 +8,91 @@ from puremagic import from_file
 BLOCK_SIZE_16 = 16
 
 
+def combine_file_and_png(png_file, target_file, output_file):
+    """
+    combine 2 files (1: png, 2: any other file type) to a png file - without decryption/encryption...
+    the output file can be easily open by changing his type to the proper type.
+
+    2 files in 1 (in 1 png file...).
+    """
+    if from_file(png_file, mime=True).split("/")[1] == "png":
+        with open(png_file, "rb") as f:
+            png = f.read()
+        with open(target_file, "rb") as f:
+            file = f.read()
+    else:
+        with open(target_file, "rb") as f:
+            png = f.read()
+        with open(png_file, "rb") as f:
+            file = f.read()
+
+    combined_file = png[:8]
+
+    file = wrap_of_png(file)
+
+    combined_file += file
+
+    combined_file += png[8:]
+
+    with open(output_file, "wb") as opened_file:
+        opened_file.write(combined_file)
+
+
+def int_to_str_encoded(x):
+    """
+    take a int convert it to a hex with length of 8 (fills with zero)
+    encoding and return it.
+    """
+    x = hex(x)[2:]
+    if "L" in x:
+        x = x[:-1]
+    if len(x) % 8 != 0:
+        x = x.zfill(8)
+
+    x = x.encode()
+    return x
+
+
+def xor(a, b):
+    """
+    performing a xor between 2 string/bytes letter for each char in them.
+    continue till the first one to end.
+    """
+    res = []
+    for x, y in zip(a, b):
+        if type(x) == str:
+            x = ord(x)
+
+        if type(y) == str:
+            y = ord(y)
+
+        res.append(chr(x ^ y))
+
+    res = ''.join(res)
+    res = res.encode("iso-8859-1")
+    return res
+
+
+def int4b(i, e='>'):
+    """
+    a assistance method for the "wrap_of_png" method.
+    """
+    assert e[0] in "<>"
+    return struct.pack(e[0] + "I", i)
+
+
+def wrap_of_png(data, type_=b"cOMM"):
+    """
+    wrapping a file according its length and data in order to allow the png to wrap it. and easily get 2 file in 1.
+    """
+    return b"".join([
+        int4b(len(data)),
+        type_,
+        data,
+        int4b(crc32(type_ + data) % 0x100000000)
+    ])
+
+
 def remove_wrapping_png_file(png_file_name, output_file_name):
     """
     get a PNG file with a hiding file inside it.
@@ -165,41 +250,6 @@ def decrypt_to_file(src, out, key, iv):
     # return final_file
 
 
-def int_to_str_encoded(x):
-    """
-    take a int convert it to a hex with length of 8 (fills with zero)
-    encoding and return it.
-    """
-    x = hex(x)[2:]
-    if "L" in x:
-        x = x[:-1]
-    if len(x) % 8 != 0:
-        x = x.zfill(8)
-
-    x = x.encode()
-    return x
-
-
-def xor(a, b):
-    """
-    performing a xor between 2 string/bytes letter for each char in them.
-    continue till the first one to end.
-    """
-    res = []
-    for x, y in zip(a, b):
-        if type(x) == str:
-            x = ord(x)
-
-        if type(y) == str:
-            y = ord(y)
-
-        res.append(chr(x ^ y))
-
-    res = ''.join(res)
-    res = res.encode("iso-8859-1")
-    return res
-
-
 def hide_png_in_png(img1, img2, img3, key, iv):
     """
     taking 3 images file - source (png), target (png), output (png).
@@ -256,54 +306,4 @@ def hide_file_in_png(src, tar, out, key, iv):
     combined_file += png[8:]
 
     with open(out, "wb") as opened_file:
-        opened_file.write(combined_file)
-
-
-def int4b(i, e='>'):
-    """
-    a assistance method for the "wrap_of_png" method.
-    """
-    assert e[0] in "<>"
-    return struct.pack(e[0] + "I", i)
-
-
-def wrap_of_png(data, type_=b"cOMM"):
-    """
-    wrapping a file according its length and data in order to allow the png to wrap it. and easily get 2 file in 1.
-    """
-    return b"".join([
-        int4b(len(data)),
-        type_,
-        data,
-        int4b(crc32(type_ + data) % 0x100000000)
-    ])
-
-
-def combine_file_and_png(png_file, target_file, output_file):
-    """
-    combine 2 files (1: png, 2: any other file type) to a png file - without decryption/encryption...
-    the output file can be easily open by changing his type to the proper type.
-
-    2 files in 1 (in 1 png file...).
-    """
-    if from_file(png_file, mime=True).split("/")[1] == "png":
-        with open(png_file, "rb") as f:
-            png = f.read()
-        with open(target_file, "rb") as f:
-            file = f.read()
-    else:
-        with open(target_file, "rb") as f:
-            png = f.read()
-        with open(png_file, "rb") as f:
-            file = f.read()
-
-    combined_file = png[:8]
-
-    file = wrap_of_png(file)
-
-    combined_file += file
-
-    combined_file += png[8:]
-
-    with open(output_file, "wb") as opened_file:
         opened_file.write(combined_file)
