@@ -3,38 +3,31 @@
 from menu_file import menu
 from actions_file import *
 
+ENCRYPT = "encrypt"
+DECRYPT = "decrypt"
+DECRYPT_TO_PNG = "decrypt-to-png"
+DECRYPT_TO_FILE = "decrypt-to-file"
+HIDE_PNG_IN_PNG = "hide-png-in-png"
+HIDE_FILE_IN_PNG = "hide-file-in-png"
+MAKE_PNG_CLEAN = "make-png-clean"
+MAKE_FILE_CLEAN = "make-file-clean"
+COMBINE_FILE_IN_PNG = "combine-file-in-png"
 
-def handle_file(src, key, iv, out, action):
-    """
-    we use this method when chose action of:
-    "encrypt", "decrypt", "decrypt-to-png", "decrypt-to-pdf"
-    """
-    with open(src, "rb") as f:
-        s = f.read()
-
-    with open(out, "wb") as f:
-        if action == "decrypt":
-            f.write(decrypt(s, iv, key))
-
-        elif action == "decrypt-to-png":
-            f.write(decrypt_to_png(s, iv, key))
-
-        elif action == "decrypt-to-file":
-            f.write(decrypt_to_file(s, iv, key))
-
-        else:  # action == "encrypt":
-            f.write(encrypt(s, iv, key))
-
-
-ange_funcs = {
-    "hide-png-in-png": hide_png_in_png,
-    "hide-file-in-png": hide_file_in_png,
+enc_dec_funcs_dict = {
+    ENCRYPT: encrypt,
+    DECRYPT: decrypt,
+    DECRYPT_TO_PNG: decrypt_to_png,
+    DECRYPT_TO_FILE: decrypt_to_file,
 }
 
-cleaning_funcs = {
-    "make-png-clean": remove_hidden_file_from_png_file,
-    "make-file-clean": remove_wrapping_png_file,
-    # "combine-file-in-png": combine_file_and_png
+ange_funcs_dict = {
+    HIDE_PNG_IN_PNG: hide_png_in_png,
+    HIDE_FILE_IN_PNG: hide_file_in_png,
+}
+
+cleaning_funcs_dict = {
+    MAKE_PNG_CLEAN: remove_hidden_file_from_png_file,
+    MAKE_FILE_CLEAN: remove_wrapping_png_file,
 }
 
 
@@ -44,17 +37,20 @@ def main():
     """
     args = menu()
 
-    if args.action in ["encrypt", "decrypt", "decrypt-to-png", "decrypt-to-file"]:
-        handle_file(args.source, args.key, args.iv, args.output, args.action)
+    if args.action in enc_dec_funcs_dict:
+        # ENCRYPT, DECRYPT, DECRYPT_TO_PNG, DECRYPT_TO_FILE
+        enc_dec_funcs_dict[args.action](args.source, args.output, args.key, args.iv)
 
-    elif args.action in ["make-png-clean", "make-file-clean"]:
-        cleaning_funcs[args.action](args.source, args.output)
+    elif args.action in cleaning_funcs_dict:
+        # MAKE_PNG_CLEAN, MAKE_FILE_CLEAN
+        cleaning_funcs_dict[args.action](args.source, args.output)
        
-    elif args.action in ["combine-file-in-png"]:
-        combine_file_and_png(args.source, args.target, args.output)
+    elif args.action in ange_funcs_dict:
+        # HIDE_PNG_IN_PNG, HIDE_FILE_IN_PNG
+        ange_funcs_dict[args.action](args.source, args.target, args.output, args.key, args.iv)
 
-    else:  # args.action in ["hide-png-in-png", "hide-file-in-png"]
-        ange_funcs[args.action](args.source, args.target, args.output, args.key, args.iv)
+    else:  # args.action in [COMBINE_FILE_IN_PNG]:
+        combine_file_and_png(args.source, args.target, args.output)
 
     print("done ")
 

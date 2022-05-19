@@ -40,7 +40,7 @@ def remove_hidden_file_from_png_file(png_file_name, output_file_name):
         opened_writing_pdf_file.write(final_png_file)
 
 
-def encrypt(msg, iv, key):
+def encrypt_aes_cbc(msg, key, iv):
     """
     encrypt the given msg, with the given key and iv.
     encryption - AES CBC
@@ -62,11 +62,10 @@ def encrypt(msg, iv, key):
         # print(iv)
         r += aes.encrypt(xor(i, iv))
         iv = r[-BLOCK_SIZE_16:]
-
     return r
 
 
-def decrypt(msg, iv, key):
+def decrypt_aes_cbc(msg, key, iv):
     """
     decrypt the given msg, with the given key and iv.
     decryption - AES CBC
@@ -88,20 +87,47 @@ def decrypt(msg, iv, key):
         # print(iv)
         r += xor(iv, aes.decrypt(i))
         iv = i
-
-    # print("length of r before = ", len(r))
     return r
 
 
-def decrypt_to_png(msg, iv, key):
+def encrypt(src, out, key, iv):
+    """
+    encrypting a given file (src) and writing it to the given output (out).
+    """
+    with open(src, "rb") as opened_file_reading:
+        msg = opened_file_reading.read()
+
+    enc_msg = encrypt_aes_cbc(msg, key, iv)
+
+    with open(out, "wb") as opened_file_writing:
+        opened_file_writing.write(enc_msg)
+
+
+def decrypt(src, out, key, iv):
+    """
+    decrypting a given file (src) and writing it to the given output (out).
+    """
+    with open(src, "rb") as opened_file_reading:
+        msg = opened_file_reading.read()
+
+    dec_msg = decrypt_aes_cbc(msg, key, iv)
+
+    with open(out, "wb") as opened_file_writing:
+        opened_file_writing.write(dec_msg)
+
+
+def decrypt_to_png(src, out, key, iv):
     """
     decrypt a angecrypted PNG file back to a PNG file.
     """
+    with open(src, "rb") as opened_file_reading:
+        msg = opened_file_reading.read()
+
     ihdr_index = msg.index(b"\x00\x00\x00\rIHDR") - 4  # minus 4 because of the finish wrapper
 
     png2 = msg[16:ihdr_index]
 
-    png2 = decrypt(png2, iv, key)
+    png2 = decrypt_aes_cbc(png2, key, iv)
 
     png1 = msg[:8] + msg[ihdr_index + 4:]
 
@@ -111,29 +137,32 @@ def decrypt_to_png(msg, iv, key):
 
     final_file = png2[:8] + png1 + png2[png2_ihdr_index + 4:]
 
-    return final_file
+    with open(out, "wb") as opened_file_writing:
+        opened_file_writing.write(final_file)
+    # return final_file
 
 
-def decrypt_to_file(msg, iv, key):
+def decrypt_to_file(src, out, key, iv):
     """
     decrypt a angecrypted PNG file back to a any file.
     its actually decrypting from png to everything possible file type...
     """
+    with open(src, "rb") as opened_file_reading:
+        msg = opened_file_reading.read()
 
     ihdr_index = msg.index(b"\x00\x00\x00\rIHDR") - 4  # minus 4 because of the finish wrapper
 
     file = msg[16:ihdr_index]
 
-    file = decrypt(file, iv, key)
+    file = decrypt_aes_cbc(file, key, iv)
 
     file = wrap_of_png(file)
 
     final_file = msg[:8] + file + msg[ihdr_index + 4:]
 
-    # with open("divide_pdf_from_png.pdf", "wb") as opened_writing_file:
-    #     opened_writing_file.write(final_file)
-
-    return final_file
+    with open(out, "wb") as opened_file_writing:
+        opened_file_writing.write(final_file)
+    # return final_file
 
 
 def int_to_str_encoded(x):
@@ -185,7 +214,7 @@ def hide_png_in_png(img1, img2, img3, key, iv):
 
     combined_file = src[:8]
 
-    tar = encrypt(tar, iv, key)
+    tar = encrypt_aes_cbc(tar, key, iv)
 
     tar = wrap_of_png(tar)
 
@@ -218,7 +247,7 @@ def hide_file_in_png(src, tar, out, key, iv):
 
     combined_file = png[:8]
 
-    file = encrypt(file, iv, key)
+    file = encrypt_aes_cbc(file, key, iv)
 
     file = wrap_of_png(file)
 
