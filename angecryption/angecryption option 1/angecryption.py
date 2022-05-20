@@ -43,7 +43,8 @@ def main():
         # HIDE_PNG_IN_PNG, HIDE_FILE_IN_PNG
         ange_funcs_dict[args.action](args.source, args.target, args.output, args.key, args.iv)
 
-    else:  # args.action in [COMBINE_FILE_IN_PNG]:
+    else:
+        # COMBINE_FILE_IN_PNG
         combine_file_and_png(args.source, args.target, args.output)
 
     print("done ")

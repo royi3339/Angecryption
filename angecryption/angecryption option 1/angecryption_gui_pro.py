@@ -1,5 +1,6 @@
 # Royi Alishayev.
 
+import pathlib
 from tkinter import *
 import tkinter as tk
 from tkinter import ttk
@@ -7,7 +8,6 @@ from actions_file import encrypt, decrypt, decrypt_to_png, decrypt_to_file,  hid
     remove_hidden_file_from_png_file, remove_wrapping_png_file, combine_file_and_png
 from utils import ENCRYPT, DECRYPT, DECRYPT_TO_PNG, DECRYPT_TO_FILE, HIDE_PNG_IN_PNG, HIDE_FILE_IN_PNG, MAKE_PNG_CLEAN,\
     MAKE_FILE_CLEAN, COMBINE_FINE_IN_PNG
-import pathlib
 from gui_angecryption_utils import files_in_the_directory, check_enc_dec_funcs_params, check_angecryption_funcs_params,\
     check_cleaning_funcs_params, check_combine_file_in_png_params
 
@@ -31,20 +31,24 @@ CLEANING_FUNCS = [MAKE_PNG_CLEAN, MAKE_FILE_CLEAN]
 DEFAULT_OUTPUT_FILE_NAME = "angecrypted.out"
 CURRENT_PATH_FILES = str(pathlib.Path(__file__).parent.resolve()) + "\\*.*"
 
-# Top level window
-frame_root = tk.Tk()
-frame_root.eval('tk::PlaceWindow %s center' % frame_root.winfo_toplevel())
-frame_root.title("Angecryption Software")
-frame_root.geometry('300x350')
-frame_root.resizable(False, False)
 
-frame = Frame(frame_root)
-frame.pack(padx=10, pady=10, fill='x')
+def check_params_list_values(list_of_params):
+    """
+    get a list of params, and check that they arre not an empty string ('').
+    if one of them is empty string ('') - will return a "request to fill the params"
+    else will return '' - which means that there is no error message...
+    """
+    for param in list_of_params:
+        if not param:
+            # if the box is empty (''), will be returned a error message...
+            return "Please fill al the required box values !!!"
+    return ''
 
 
-# Function for getting Input
-# from Entry box and activating the right function as well.
 def ok_button_func():
+    """
+    Function for getting Input from Entry box and activating the right function as well.
+    """
     combo_action_result = action_inpt.get()
 
     try:
@@ -57,8 +61,11 @@ def ok_button_func():
                 out_param = DEFAULT_OUTPUT_FILE_NAME
 
             error_msg = check_params_list_values([src_param, key_param, iv_param])
+            if error_msg:
+                write_to_label(lbl, error_msg, msg_color="red", to_print=True)
+                return
 
-            src_param, key_param, iv_param = check_enc_dec_funcs_params(src_param, key_param, iv_param)
+            src_param, key_param, iv_param = check_enc_dec_funcs_params(src_param, key_param, iv_param, combo_action_result)
             function_params = [src_param, out_param, key_param, iv_param]
 
         elif combo_action_result in ANGECRYPTION_FUNCS:
@@ -71,6 +78,9 @@ def ok_button_func():
                 out_param = DEFAULT_OUTPUT_FILE_NAME
 
             error_msg = check_params_list_values([src_param, tar_param, key_param, iv_param])
+            if error_msg:
+                write_to_label(lbl, error_msg, msg_color="red", to_print=True)
+                return
 
             src_param, tar_param, key_param, iv_param = check_angecryption_funcs_params(src_param, tar_param, key_param, iv_param)
             function_params = [src_param, tar_param, out_param, key_param, iv_param]
@@ -81,6 +91,9 @@ def ok_button_func():
             if not out_param:
                 out_param = DEFAULT_OUTPUT_FILE_NAME
             error_msg = check_params_list_values([src_param])
+            if error_msg:
+                write_to_label(lbl, error_msg, msg_color="red", to_print=True)
+                return
 
             src_param = check_cleaning_funcs_params(src_param)
             function_params = [src_param, out_param]
@@ -92,27 +105,39 @@ def ok_button_func():
             if not out_param:
                 out_param = DEFAULT_OUTPUT_FILE_NAME
             error_msg = check_params_list_values([src_param, tar_param])
+            if error_msg:
+                write_to_label(lbl, error_msg, msg_color="red", to_print=True)
+                return
 
             src_param, tar_param = check_combine_file_in_png_params(src_param, tar_param)
             function_params = [src_param, tar_param, out_param]
 
         else:
             # if nothing is chosen - print "please choose one..."
-            write_to_label(lbl, "Please choose which action you want to perform !\nand insert the proper values",
-                           msg_color="blue")
+            error_msg = "Please choose which action you want to perform !\nand insert the proper values\n"
+            write_to_label(lbl, error_msg, msg_color="blue", to_print=True)
             return
 
         if error_msg:
-            write_to_label(lbl, error_msg, msg_color="red")
+            write_to_label(lbl, error_msg, msg_color="red", to_print=True)
         else:
             ACTION_FUNCTIONS_DICT[combo_action_result](*function_params)
             # inp = inputtxt.get(1.0, "end-1c")
-            write_to_label(lbl, "done", msg_color="green")
+            write_to_label(lbl, "done", msg_color="green", to_print=True)
 
     except Exception as e:
-        print(e)
-        write_to_label(lbl, e, msg_color="red")
+        write_to_label(lbl, e, msg_color="red", to_print=True)
 
+
+# Top level window
+frame_root = tk.Tk()
+frame_root.eval('tk::PlaceWindow %s center' % frame_root.winfo_toplevel())
+frame_root.title("Angecryption Software")
+frame_root.geometry('300x355')
+frame_root.resizable(False, False)
+
+frame = Frame(frame_root)
+frame.pack(padx=10, pady=10, fill='x')
 
 # Label Creation
 action_lbl = tk.Label(frame, text="Action: ")
@@ -128,6 +153,7 @@ action_inpt.pack(fill='x', expand=True)
 # prevent typing a value
 action_inpt['state'] = 'readonly'
 
+
 # Label Creation
 source_lbl = tk.Label(frame, text='Source: ')
 source_lbl.pack(fill='x', expand=True)
@@ -142,7 +168,7 @@ key_lbl = tk.Label(frame, text='Key: ')
 key_lbl.pack(fill='x', expand=True)
 
 # EntryBox Creation
-key_inpt = tk.Entry(frame, width=55)
+key_inpt = ttk.Entry(frame, width=55)
 key_inpt.pack(fill='x', expand=True)
 
 # Label Creation
@@ -150,7 +176,7 @@ iv_lbl = tk.Label(frame, text='IV: ')
 iv_lbl.pack(fill='x', expand=True)
 
 # EntryBox Creation
-iv_inpt = tk.Entry(frame, width=55)
+iv_inpt = ttk.Entry(frame, width=55)
 iv_inpt.pack(fill='x', expand=True)
 
 # Label Creation
@@ -167,11 +193,11 @@ output_lbl = tk.Label(frame, text='Output: ')
 output_lbl.pack(fill='x', expand=True)
 
 # EntryBox Creation
-output_inpt = tk.Entry(frame, width=55, text="angecrypted.out")
+output_inpt = ttk.Entry(frame, width=55)
 output_inpt.pack(fill='x', expand=True)
 
 # Button Creation
-printButton = ttk.Button(frame, text="ok", command=ok_button_func)
+printButton = ttk.Button(frame, text="OK", command=ok_button_func)
 printButton.pack(fill='x', expand=True, pady=10)
 
 # Label Creation
@@ -179,9 +205,20 @@ lbl = tk.Label(frame, text='')
 lbl.pack(fill='x', expand=True)
 
 
-# bind the selected value changes
+def write_to_label(lbl_obj, new_text='', msg_color="black", to_print=False):
+    """
+    A simple function that writing a message to a given label
+    and if to_print is - True, will print the message as well.
+    """
+    if to_print:
+        print(new_text)
+    lbl_obj.config(text=new_text, foreground=msg_color)
+
+
 def combo_action_changed(action_chosen):
     """
+    Bind the selected value changes
+
     handle the action changed event
     and calling to the proper function that will
     locks and unlocks the right values box.
@@ -210,29 +247,14 @@ def config_box_list_state(list_of_box, new_state="normal"):
         box.config(state=new_state)
 
 
-def check_params_list_values(list_of_params):
-    for param in list_of_params:
-        if not param:
-            # if the box is empty (''), will be returned a error message...
-            return "Please fill al the required box values !!!"
-    return ''
-
-
-def write_to_label(lbl_obj, new_text='', msg_color="black"):
-    """
-    a simple function that writing a message to a given label
-    """
-    lbl_obj.config(text=new_text, foreground=msg_color)
-
-
 def combo_enc_dec_funcs():
     """
-    changing the proper Entry Box to be "readonly", and "normal"...
+    changing the proper Entry Box to be "disabled", and "normal"...
     source, key, iv, output => "normal".
-    target => "readonly".
+    target => "disabled".
     """
     config_box_list_state([source_inpt, key_inpt, iv_inpt, output_inpt], "normal")
-    config_box_list_state([target_inpt], "readonly")
+    config_box_list_state([target_inpt], "disabled")
 
 
 def combo_angecryption_funcs():
@@ -245,22 +267,22 @@ def combo_angecryption_funcs():
 
 def combo_cleaning_funcs():
     """
-    changing the proper Entry Box to be "readonly", and "normal"...
+    changing the proper Entry Box to be "disabled", and "normal"...
     source, output => "normal".
-    target, key, iv => "readonly".
+    target, key, iv => "disabled".
     """
     config_box_list_state([source_inpt, output_inpt], "normal")
-    config_box_list_state([target_inpt, key_inpt, iv_inpt], "readonly")
+    config_box_list_state([target_inpt, key_inpt, iv_inpt], "disabled")
 
 
 def combo_combine_file_in_png():
     """
-    changing the proper Entry Box to be "readonly", and "normal"...
+    changing the proper Entry Box to be "disabled", and "normal"...
     source, target, output => "normal".
-    key, iv => "readonly".
+    key, iv => "disabled".
     """
     config_box_list_state([source_inpt, target_inpt, output_inpt], "normal")
-    config_box_list_state([key_inpt, iv_inpt], "readonly")
+    config_box_list_state([key_inpt, iv_inpt], "disabled")
 
 
 action_inpt.bind('<<ComboboxSelected>>', combo_action_changed)

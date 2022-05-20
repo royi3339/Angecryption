@@ -23,7 +23,8 @@ def check_iv_or_key_type_and_length(param, name_of_param):
         param = param.encode("iso-8859-1")
 
     if len(param) != 16:
-        raise argparse.ArgumentTypeError(f"the {name_of_param} must be 16 bytes in length, and not {len(param)} bytes!")
+        # raise argparse.ArgumentTypeError(f"the {name_of_param} must be 16 bytes in length, and not {len(param)} bytes!")
+        raise argparse.ArgumentTypeError(f"the {name_of_param} must be 16 bytes!, but you entered {len(param)} bytes!")
     return param
 
 
