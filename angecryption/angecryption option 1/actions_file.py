@@ -125,29 +125,22 @@ def remove_hidden_file_from_png_file(png_file_name, output_file_name):
         opened_writing_pdf_file.write(final_png_file)
 
 
+def pad_last_block(msg):
+    """
+    zero-pad a trailing partial block at its start (not its end), as the original format expects.
+    """
+    tail_len = len(msg) % BLOCK_SIZE_16
+    if tail_len == 0:
+        return msg
+    return msg[:-tail_len] + b"\x00" * (BLOCK_SIZE_16 - tail_len) + msg[-tail_len:]
+
+
 def encrypt_aes_cbc(msg, key, iv):
     """
     encrypt the given msg, with the given key and iv.
     encryption - AES CBC
     """
-    aes = AES.new(key, AES.MODE_ECB)
-    m = [msg[i:i + BLOCK_SIZE_16] for i in range(0, len(msg), BLOCK_SIZE_16)]
-
-    r = b''
-    for i in m:
-        if len(i) < BLOCK_SIZE_16:
-            # print("\n found i != 16\n", "length of i = ", len(i), "\ni = ", i, "\n total length=", len(msg))
-
-            number_of_padding_at_the_end = b"\x00" * (BLOCK_SIZE_16 - len(i))
-
-            # print("length of number_of_padding_at_the_end = ", len(number_of_padding_at_the_end))
-
-            i = number_of_padding_at_the_end + i[0:]
-
-        # print(iv)
-        r += aes.encrypt(xor(i, iv))
-        iv = r[-BLOCK_SIZE_16:]
-    return r
+    return AES.new(key, AES.MODE_CBC, iv).encrypt(pad_last_block(msg))
 
 
 def decrypt_aes_cbc(msg, key, iv):
@@ -155,24 +148,7 @@ def decrypt_aes_cbc(msg, key, iv):
     decrypt the given msg, with the given key and iv.
     decryption - AES CBC
     """
-    aes = AES.new(key, AES.MODE_ECB)
-    m = [msg[i:i + BLOCK_SIZE_16] for i in range(0, len(msg), BLOCK_SIZE_16)]
-
-    r = b''
-    for i in m:
-        if len(i) < BLOCK_SIZE_16:
-            # print("\n found i != 16\n", "length of i=", len(i), "\ni= ", i, "\n total length=", len(msg))
-
-            number_of_padding_at_the_end = b"\x00" * (BLOCK_SIZE_16 - len(i))
-
-            # print("length of number_of_padding_at_the_end = ", len(number_of_padding_at_the_end))
-
-            i = number_of_padding_at_the_end + i[0:]
-
-        # print(iv)
-        r += xor(iv, aes.decrypt(i))
-        iv = i
-    return r
+    return AES.new(key, AES.MODE_CBC, iv).decrypt(pad_last_block(msg))
 
 
 def encrypt(src, out, key, iv):
